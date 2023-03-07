@@ -10,12 +10,16 @@
  * 2. https://www.postgresqltutorial.com/postgresql-window-function/
  */
 
-SELECT
-    customer_id,
-    first_name || ' ' || last_name AS name,
-    sum(amount) AS total_payment,
-    'fixme' as percentile
-FROM customer
-JOIN payment USING (customer_id)
-GROUP BY customer_id,first_name,last_name
-ORDER BY total_payment DESC
+SELECT * 
+FROM (SELECT
+      customer_id,
+      first_name || ' ' || last_name AS name,
+      sum(amount) AS total_payment,
+      NTILE(100) OVER(
+	      ORDER BY sum(amount)
+	  ) as percentile
+    FROM customer
+    JOIN payment USING (customer_id)
+    GROUP BY customer_id,first_name,last_name) AS t
+WHERE percentile >= 90
+ORDER BY name ASC;

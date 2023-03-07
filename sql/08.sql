@@ -18,3 +18,22 @@
  *    Ensure that you are not counting a customer that has rented a movie twice as 2 separate customers renting the movie.
  *    I did this by using the SELECT DISTINCT clause.
  */
+
+WITH bucket_customers AS (
+    SELECT DISTINCT customer_id
+    FROM rental
+    JOIN inventory USING (inventory_id)
+    JOIN film USING (film_id)
+    WHERE title = 'BUCKET BROTHERHOOD'
+)
+
+SELECT title
+FROM film
+JOIN inventory USING (film_id)
+JOIN rental USING (inventory_id)
+WHERE customer_id IN (
+    SELECT customer_id FROM bucket_customers
+) AND title != 'BUCKET BROTHERHOOD'
+GROUP BY title
+HAVING count(DISTINCT customer_id) >= 3
+ORDER BY title ASC;
